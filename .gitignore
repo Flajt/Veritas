@@ -1,7 +1,8 @@
 #Project specific
 *.pt
 *.conf
-
+.vscode
+/other/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

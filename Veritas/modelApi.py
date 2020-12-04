@@ -8,15 +8,29 @@ from fairseq import tasks
 from fairseq.sequence_generator import SequenceGenerator
 import numpy as np
 import torch
-from model import Model
+from Veritas import Model
 
 
 class ModelApi():
     def __init__(self) -> None:
         self.m: Model = Model()
         self.translator: SequenceGenerator = self.m.getTranslatorModel()
-        self.Batch = namedtuple('Batch', 'srcs tokens lengths')
-        self.Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
+        #self.Batch = namedtuple('Batch', 'srcs tokens lengths') <- is for the outcommented code below
+        #self.Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments') <- this one as well
+
+    def translate(self,sentences:list)->list:
+        """
+        This function should translate text into sparql
+        """
+
+        #self.translator.generate() or .generate_batch_iter are two out of three ways to make predictions in theory
+        # the other is self.m() and passing everything into here, no clue on how to format that
+
+'''
+The code below is the one I copied from the tntspa/fairseq submodule (not included anymore), here they preprocess all data and feed it into the model, as far as I understood it
+But I can't deciver the preprocessing.
+
+
 
     def _buffered_read(self,buffer_size):
         buffer = []
@@ -203,3 +217,4 @@ if __name__ == "__main__":
     m = ModelApi()
     m.translate(["Were is the water source on earth?"])# me trying to test it, depending on what way (the other would be accessing the model via self.m.f(args)) the error message differs
     #m._main({"buffer_size":10})
+'''

@@ -1,1 +1,0 @@
-The contents of the folder need to be placed under: `./tntspa/fairseq/fairseq/models` to work (tntnspa and fairseq are both git submodules), the folder itself not, only the files.

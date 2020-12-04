@@ -13,16 +13,17 @@ It will be able to check a statment with the help of the Semantic Web, by conver
 
 
 ## Where does what happen?
-The `src` folder would be the theoretical folder of all code.
-For testing I donwloaded the papers authors code tested there aswell, my code there can be found in `tntspa/fairseq/fairseq/models` and then `model.py` and `modelApi.py`
-The goal is to have everything happen in the src folder!
+It's a package so you can import it (still in development tho).
+All code can be found in the `Veritas` folder
+In `src` you can find main.py which is only for development
 
 ## Extra stuff:
-The `checkpoint_best.pt` file needs to be placed under `src/model/ConvS2S` and can be dowloaded from the tntspa repository (we used the Monument Dataset one). They can be found under the README.md in the tntspa folder or here: https://github.com/xiaoyuin/tntspa under `Trained Models` (Model used `ConvS2S` on `Monument Dataset`)
+The `checkpoint_best.pt` file needs to be placed under `data/ConvS2S` and can be dowloaded from the tntspa repository (we used the Monument Dataset one). They can be found under the README.md in the tntspa folder or here: https://github.com/xiaoyuin/tntspa under `Trained Models` (Model used `ConvS2S` on `Monument Dataset`)
 
 
-Citation:
-@article{DBLP:journals/corr/abs-1906-09302,
+## Citation:
+
+`@article{DBLP:journals/corr/abs-1906-09302,
   author    = {Xiaoyu Yin and
                Dagmar Gromann and
                Sebastian Rudolph},
@@ -36,4 +37,4 @@ Citation:
   timestamp = {Thu, 27 Jun 2019 18:54:51 +0200},
   biburl    = {https://dblp.org/rec/journals/corr/abs-1906-09302.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
-}
+}`
