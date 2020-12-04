@@ -18,12 +18,12 @@ All code can be found in the `Veritas` folder
 In `src` you can find main.py which is only for development
 
 ## Extra stuff:
-The `checkpoint_best.pt` file needs to be placed under `data/ConvS2S` and can be dowloaded from the tntspa repository (we used the Monument Dataset one). They can be found under the README.md in the tntspa folder or here: https://github.com/xiaoyuin/tntspa under `Trained Models` (Model used `ConvS2S` on `Monument Dataset`)
+The `checkpoint_best.pt` file needs to be placed under `data` and can be dowloaded from the tntspa repository (we used the Monument Dataset one). They can be found under the README.md in the tntspa folder or here: https://github.com/xiaoyuin/tntspa under `Trained Models` (Model used `ConvS2S` on `Monument Dataset`)
 
 
 ## Citation:
 
-`@article{DBLP:journals/corr/abs-1906-09302,
+```@article{DBLP:journals/corr/abs-1906-09302,
   author    = {Xiaoyu Yin and
                Dagmar Gromann and
                Sebastian Rudolph},
@@ -37,4 +37,4 @@ The `checkpoint_best.pt` file needs to be placed under `data/ConvS2S` and can be
   timestamp = {Thu, 27 Jun 2019 18:54:51 +0200},
   biburl    = {https://dblp.org/rec/journals/corr/abs-1906-09302.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
-}`
+}```
