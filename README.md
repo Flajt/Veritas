@@ -13,7 +13,8 @@ It will be able to check a statment with the help of the Semantic Web, by conver
 
 
 ## Where does what happen?
-It's a package so you can import it (still in development tho).
+It's a package so you can import it (disclaimer: still in development).
+Via: pip install -e ./Veritas
 All code can be found in the `Veritas` folder
 In `src` you can find main.py which is only for development
 
@@ -23,7 +24,7 @@ The `checkpoint_best.pt` file needs to be placed under `data` and can be dowload
 
 ## Citation:
 
-```@article{DBLP:journals/corr/abs-1906-09302,
+``` @article{DBLP:journals/corr/abs-1906-09302,
   author    = {Xiaoyu Yin and
                Dagmar Gromann and
                Sebastian Rudolph},
@@ -37,4 +38,4 @@ The `checkpoint_best.pt` file needs to be placed under `data` and can be dowload
   timestamp = {Thu, 27 Jun 2019 18:54:51 +0200},
   biburl    = {https://dblp.org/rec/journals/corr/abs-1906-09302.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
-}```
+} ```
