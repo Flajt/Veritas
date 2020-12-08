@@ -9,10 +9,12 @@ import numpy as np
 import torch
 from Veritas import model as m
 from Veritas import args
-
+from Veritas import generator_utils
+from Veritas import nlpBackend
 class ModelApi():
     def __init__(self) -> None:
         self.m: m.Model = m.Model()
+        self.nlp = nlpBackend.BasicFunctions()
         #self.translator: SequenceGenerator = self.m.getTranslatorModel()
         # <- is for the outcommented code below
         self.Batch = namedtuple('Batch', 'srcs tokens lengths')
@@ -20,6 +22,38 @@ class ModelApi():
             'Translation', 'src_str hypos pos_scores alignments')  # <- this one as well
         self.print_alignment = False
         self.args = args.Args()
+        self.args.buffer_size=2 #not required for work
+
+
+    def translate(self,text:str)->list:
+        """
+        Takes text as an input and returns a sparql answer for each question given.
+        Inputs:
+            text: A text of questions
+        Outputs:
+            A list of  json object
+        """
+        resultStorage = []
+        sentences:list = self.nlp.extractSentences(text)
+        sentences:list = [[str(i).lower().replace("?","").replace(".","")] for i in sentences]
+        print(sentences)
+        exit()
+        ret:list = self.generate(text=sentences) # generates results from text
+        print(ret)
+        print("*******************++")
+        for entry in ret:
+            entry:str = entry[0]# get's string from list
+            entry:str = entry.split("\t")[2]# removes number and fromatting in front of sentence
+            #print("*************")
+            #print(entry)
+            #print("*************")
+            decodedSparql:str = generator_utils.decode(entry)#should decode the AI generated translation to an actual one
+            _str:str = generator_utils.query_dbpedia(decodedSparql)
+            print(f"{_str}\n")
+            resultStorage.append(_str)
+        return resultStorage
+        #print(resultStorage)
+
 
     def buffered_read(self, buffer_size):
         buffer = []
@@ -41,7 +75,7 @@ class ModelApi():
                 src_str, task.source_dictionary, add_if_not_exist=False).long()
             for src_str in lines
         ]  # cretes tokens via tokenizer from src_str and ?encoding? dictionary
-
+        #print(f"Tokens in make batches: {tokens}")
         # calculate the lenghts as np.array by returning the total number of elements in the array e.g. array of size (4,4)=4*4=16
         lengths = np.array([t.numel() for t in tokens])
         itr = task.get_batch_iterator(  # And here we are lost... creates a batch iterator
@@ -55,6 +89,7 @@ class ModelApi():
             max_positions=max_positions,
         ).next_epoch_itr(shuffle=False)  # returns unshuffled batch
         for batch in itr:  # iterate through batches
+            #print(f"Tokens after data.LanguagePairDataset: {batch['net_input']['src_tokens']}")
             yield self.Batch(  # return a batch using a generator
                 # places the corresponding line to a batch id in a list?
                 srcs=[lines[i] for i in batch['id']],
@@ -64,7 +99,11 @@ class ModelApi():
                 lengths=batch['net_input']['src_lengths'],
             ), batch['id']  # return bartch id
 
-    def translate(self):
+    def generate(self,text:list):
+        """
+        text: Takes in a list of sentences as input
+        """
+        resultStorage:list = []
         if self.args.buffer_size < 1:  # set's buffer size to a min of 1
             self.args.buffer_size = 1
         # if not number of max tokens and max_sentences is given -> set max_sentences to
@@ -90,7 +129,7 @@ class ModelApi():
         # model_paths = self.args.path.split(':')#useless
         model_paths = [self.m.chkpath]
         models, model_args = utils.load_ensemble_for_inference(model_paths, task, model_arg_overrides=eval(
-            self.args.model_overrides))  # load models, might not be needed!
+            self.args.model_overrides))  # load models
 
         # Set dictionaries
         tgt_dict = task.target_dictionary
@@ -121,7 +160,7 @@ class ModelApi():
         # (None if no unknown word replacement, empty if no path to align dictionary)
         align_dict = utils.load_align_dict(self.args.replace_unk)
 
-        # creates prediction, using the text input and hypos: word under / below???????
+        # Uses named tuple to init values for later and palce src sentence as src_strs
         def make_result(src_str, hypos):
             result = self.Translation(  # create a result Tupple (named tupple result)
                 src_str='O\t{}'.format(src_str),
@@ -129,7 +168,7 @@ class ModelApi():
                 pos_scores=[],
                 alignments=[],
             )
-
+            #print(f"Hypos at beginning of make_result: {hypos}")
             # Process top predictions
             # iterates through top predictions?
             for hypo in hypos[:min(len(hypos), self.args.nbest)]:
@@ -145,6 +184,7 @@ class ModelApi():
                     remove_bpe=self.args.remove_bpe,  # bool idk what for
                 )
                 # use the hypons list of the result to save formatted post_process_prediction score
+                #print(f"Hypo tokens and string in make result after post process prediction:{hypo_tokens}, {hypo_str} ")
                 result.hypos.append(
                     'H\t{}\t{}'.format(hypo['score'], hypo_str))
                 result.pos_scores.append('P\t{}'.format(  # does the same for the positional score in list format
@@ -162,6 +202,7 @@ class ModelApi():
 
         def process_batch(batch):  # takes in a batch
             tokens = batch.tokens  # sets tokens to batch tokens
+            #print(f"Tokens in process batch: {tokens}")
             lengths = batch.lengths  # sets length to batch lenght
 
             if use_cuda:
@@ -170,14 +211,19 @@ class ModelApi():
 
             # prepare encoder input with tokens and and src_lengths
             encoder_input = {"net_input":{'src_tokens': tokens, 'src_lengths': lengths}}
-            translations = translator.generate(  # generate acutal translation from encoder input and maxlen
+            #print(f"\t Tokens: \t {tokens}")
+            ###Problem should appear around here!
+            translations = translator.generate(  # generate actual translation from encoder input and maxlen
                 models,
                 encoder_input,
                 maxlen=int(self.args.max_len_a * \
                            tokens.size(1) + self.args.max_len_b),
             )
-
+            ####
+            #print("----------------------")
             # return a list of results
+            #print(f"\n > {translations}\n")
+            #print("----------------------")
             return [make_result(batch.srcs[i], t) for i, t in enumerate(translations)]
 
         max_positions = utils.resolve_max_positions(  # resolves max positions
@@ -188,14 +234,14 @@ class ModelApi():
         if self.args.buffer_size > 1:  # checks buffer size
             # prints current buffer size
             print('| Sentence buffer size:', self.args.buffer_size)
-        print('| Type the input sentence and press return:')
-        for inputs in self.buffered_read(self.args.buffer_size):
+        #print('| Type the input sentence and press return:')
+        for inputs in text:#self.buffered_read(self.args.buffer_size):
             # stores indicies of batches (for later structering the answer?)
+            #print(inputs)
             indices = []
             results = []  # stores results
             # takes user input and generates batch and corresponding ID for iteration
             for batch, batch_indices in self.make_batches(inputs, self.args, task, max_positions):
-                print(1)
                 # adds batch indecies to indicies list
                 indices.extend(batch_indices)
                 # results will be returned by process batch
@@ -203,15 +249,18 @@ class ModelApi():
             for i in np.argsort(indices):  # iterates through sorted arrays?
                 # takes result corresponding to the input batch id
                 result = results[i]
-                print(result.src_str)  # print the answer as string
+                #print(f"result: {result}")
+                #print(result.src_str)  # print the input string (i.e. the question)
+                resultStorage.append(result.hypos) # stores result
+                #print(result.hypos)
                 # prints other stuff not needed for us
-                for hypo, pos_scores, align in zip(result.hypos, result.pos_scores, result.alignments):
-                    print(hypo)
-                    print(pos_scores)
-                    if align is not None:
-                        print(align)
-
+                #for hypo, pos_scores, align in zip(result.hypos, result.pos_scores, result.alignments):
+                    #print(hypo)
+                    #print(pos_scores)
+                    #if align is not None:
+                     #   print(align)
+        return resultStorage
 
 if __name__ == "__main__":
     m = ModelApi()
-    m.translate()
+    m.translate("Who are you doing? Are you good? How do you feel? The weather is great.")

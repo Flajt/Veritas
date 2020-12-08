@@ -1,11 +1,6 @@
-from textblob import TextBlob
-from gensim import models  # spacy
 import spacy
-from spacy import displacy
-import pytextrank
-import textblob
 
-class Veritas():
+class BasicFunctions():
     def __init__(self, language: str = "en") -> None:
         self.language: str = language# for later so you can add different languages
         self.model: str = f"{self.language}_core_web_sm"# find the language model

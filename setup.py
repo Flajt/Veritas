@@ -2,13 +2,14 @@ from setuptools import setup
 
 setup(
     name="Veritas",
-    version="0.0.1",
+    version="0.0.3",
     author_email="tjhannover@gmail.com",
     description="A python package for checking text for false statments via the Semantic Web",
     long_description=open("README.md", "r").read(),
     install_requires=[
         "torch >= 1.5.1",
         "fairseq==0.7.2",
+        "spacy==2.3.2",
         "tweepy==3.9.0",
         " six==1.15.0",
         "wikipedia==1.4.0"
