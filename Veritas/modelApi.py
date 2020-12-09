@@ -15,6 +15,7 @@ class ModelApi():
     def __init__(self) -> None:
         self.m: m.Model = m.Model()
         self.nlp = nlpBackend.BasicFunctions()
+        self.chkpath = "./data/checkpoint_best.pt"
         #self.translator: SequenceGenerator = self.m.getTranslatorModel()
         # <- is for the outcommented code below
         self.Batch = namedtuple('Batch', 'srcs tokens lengths')
@@ -25,49 +26,45 @@ class ModelApi():
         self.args.buffer_size=2 #not required for work
 
 
-    def translate(self,text:str)->list:
+    def translate(self,text:str)->dict:
         """
         Takes text as an input and returns a sparql answer for each question given.
         Inputs:
-            text: A text of questions
+            text: A text of questions (no need to remove question marks, points or lower the characters, we do that for you!)
         Outputs:
-            A list of  json object
+            A map containing the input split in sentences and the output as a json string
         """
-        resultStorage = []
+        resultStorage = {}
         sentences:list = self.nlp.extractSentences(text)
         sentences:list = [[str(i).lower().replace("?","").replace(".","")] for i in sentences]
-        print(sentences)
-        exit()
+        #print(sentences)
         ret:list = self.generate(text=sentences) # generates results from text
-        print(ret)
-        print("*******************++")
         for entry in ret:
-            entry:str = entry[0]# get's string from list
-            entry:str = entry.split("\t")[2]# removes number and fromatting in front of sentence
+            editedEntry:str = entry[0]# get's string from list
+            editedEntry:str = entry.split("\t")[2]# removes number and fromatting in front of sentence
             #print("*************")
             #print(entry)
             #print("*************")
-            decodedSparql:str = generator_utils.decode(entry)#should decode the AI generated translation to an actual one
-            _str:str = generator_utils.query_dbpedia(decodedSparql)
-            print(f"{_str}\n")
-            resultStorage.append(_str)
+            decodedSparql:str = generator_utils.decode(editedEntry)#should decode the AI generated translation to an actual one
+            result:dict = generator_utils.query_dbpedia(decodedSparql)
+            resultStorage[entry]=[result]
         return resultStorage
-        #print(resultStorage)
 
-
+    """
+    Not needed
     def buffered_read(self, buffer_size):
-        buffer = []
-        for src_str in sys.stdin:  # get's string from intput
-            # add string whithout white space in the beginning and end
-            buffer.append(src_str.strip())
-            # if the length of the buffer is larger then the buffer_size specified
-            if len(buffer) >= buffer_size:
-                yield buffer  # return the buffer as generator
-                buffer = []  # empties buffer
+            buffer = []
+            for src_str in sys.stdin:  # get's string from intput
+                # add string whithout white space in the beginning and end
+                buffer.append(src_str.strip())
+                # if the length of the buffer is larger then the buffer_size specified
+                if len(buffer) >= buffer_size:
+                    yield buffer  # return the buffer as generator
+                    buffer = []  # empties buffer
 
-        if len(buffer) > 0:  # if the final buffer is not empty yield its
-            yield buffer
-
+            if len(buffer) > 0:  # if the final buffer is not empty yield its
+                yield buffer
+    """
     # generates batches, takes in the input lines (from the buffered_read function), arguments, task??, max_positions
     def make_batches(self, lines, args, task, max_positions):
         tokens = [
@@ -101,7 +98,7 @@ class ModelApi():
 
     def generate(self,text:list):
         """
-        text: Takes in a list of sentences as input
+        text: Takes in a list of sentences as input, don't call by ourself if you don't know what you are doing
         """
         resultStorage:list = []
         if self.args.buffer_size < 1:  # set's buffer size to a min of 1
@@ -127,7 +124,7 @@ class ModelApi():
         print('| loading model(s) from {}'.format(
             self.args.path))  # useless info
         # model_paths = self.args.path.split(':')#useless
-        model_paths = [self.m.chkpath]
+        model_paths = [self.chkpath]
         models, model_args = utils.load_ensemble_for_inference(model_paths, task, model_arg_overrides=eval(
             self.args.model_overrides))  # load models
 
@@ -201,6 +198,9 @@ class ModelApi():
             return result  # returns result
 
         def process_batch(batch):  # takes in a batch
+            """
+            Processes the batch, don't call directly except you know what you are doing
+            """
             tokens = batch.tokens  # sets tokens to batch tokens
             #print(f"Tokens in process batch: {tokens}")
             lengths = batch.lengths  # sets length to batch lenght
@@ -261,6 +261,6 @@ class ModelApi():
                      #   print(align)
         return resultStorage
 
-if __name__ == "__main__":
-    m = ModelApi()
-    m.translate("Who are you doing? Are you good? How do you feel? The weather is great.")
+#if __name__ == "__main__":#DEBUG
+ #   m = ModelApi()
+  #  m.translate("Who are you doing? Are you good? How do you feel? The weather is great.")

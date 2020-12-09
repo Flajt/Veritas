@@ -1,7 +1,7 @@
 # Copyright (c) 2017-present, Facebook, Inc.
 # All rights reserved.
 #
-# Needs propper implementation
+# Needs propper legal implementation, license is MIT if I'm not wrong
 # 
 # 
 # This source code is licensed under the license found in the LICENSE file in

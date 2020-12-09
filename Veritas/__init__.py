@@ -5,3 +5,5 @@ from . import model
 from . import args
 from . import tokenizer
 from . import generator_utils
+
+__version__="0.0.4"
