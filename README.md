@@ -1,25 +1,36 @@
 # Veritas
-
+(Package name is Veritass due to namespace problems)
 Veritas is an opensource fact checking tool.
-It will be able to check a statment with the help of the Semantic Web, by converting text into sparql querry questions which will then be passed into a KnowledgeGraph
+It will be able to check a statment with the help of the Semantic Web, by converting text into sparql querry questions which will then be passed into a KnowledgeGraph.
 
 
 ## TODO:
 1. Getting an input (e.g. tweet, article etc.) -> Done
 2. Converting the input into questions -> Work in progress
-3. Converting the questions into a Sparql query (using later FactForge as endpoint) -> Work in progress
+3. Converting the questions into a Sparql query (using later FactForge as endpoint) -> Done
 4. Getting the answer and formatting it into a usefull answer -> Work in progress
-5. Return it to the user -> Work in progress
+5. Return it to the user -> Done
 
 
-## Where does what happen?
-It's a package so you can import it (disclaimer: still in development).
-Via: pip install -e ./Veritas
-All code can be found in the `Veritas` folder
-In `src` you can find main.py which is only for development
+## Installation:
+It's a package so you can import it (disclaimer: still in development).<br/>
+*For development*:`pip install -e ./Veritas` (by pulling it from here) and pull yourself the tntspa repository and initalise the submodules, so you have the version of fairseq we use for development<br/>
+
+All code can be currently found in the `Veritas` folder <br/>
+*For using it*: `pip install Veritass` <br/>
+
+
+## Quickstart:
+```from Veritas import modelApi
+    m = modelApi.ModelApi()
+    ret:list = m.translate(text="What is the biggest Mountin in the US? What is the capital of China?")
+    print(ret)
+```
+## Know Issues:
+Often a question won't return an answer or an related answer, we are working on it. (As you can see in the example)
 
 ## Extra stuff:
-The `checkpoint_best.pt` file needs to be placed under `data` and can be dowloaded from the tntspa repository (we used the Monument Dataset one). They can be found under the README.md in the tntspa folder or here: https://github.com/xiaoyuin/tntspa under `Trained Models` (Model used `ConvS2S` on `Monument Dataset`)
+We use the model checkpoint and a code snippet from: https://github.com/xiaoyuin/tntspa and the included fairseq submodule.
 
 
 ## Citation:

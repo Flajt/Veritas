@@ -1,5 +1,5 @@
 from collections import namedtuple
-import sys
+from Veritas import get_data
 from Veritas import tokenizer
 from fairseq import data
 from fairseq import utils
@@ -7,15 +7,13 @@ from fairseq import tasks
 from fairseq.sequence_generator import SequenceGenerator
 import numpy as np
 import torch
-from Veritas import model as m
 from Veritas import args
 from Veritas import generator_utils
 from Veritas import nlpBackend
 class ModelApi():
     def __init__(self) -> None:
-        self.m: m.Model = m.Model()
         self.nlp = nlpBackend.BasicFunctions()
-        self.chkpath = "./data/checkpoint_best.pt"
+        self.chkpath = get_data("checkpoint_best.pt")
         #self.translator: SequenceGenerator = self.m.getTranslatorModel()
         # <- is for the outcommented code below
         self.Batch = namedtuple('Batch', 'srcs tokens lengths')
@@ -26,7 +24,7 @@ class ModelApi():
         self.args.buffer_size=2 #not required for work
 
 
-    def translate(self,text:str)->dict:
+    def translate(self,text:str)->list:
         """
         Takes text as an input and returns a sparql answer for each question given.
         Inputs:
@@ -34,20 +32,20 @@ class ModelApi():
         Outputs:
             A map containing the input split in sentences and the output as a json string
         """
-        resultStorage = {}
+        resultStorage = []
         sentences:list = self.nlp.extractSentences(text)
         sentences:list = [[str(i).lower().replace("?","").replace(".","")] for i in sentences]
         #print(sentences)
         ret:list = self.generate(text=sentences) # generates results from text
         for entry in ret:
             editedEntry:str = entry[0]# get's string from list
-            editedEntry:str = entry.split("\t")[2]# removes number and fromatting in front of sentence
+            editedEntry:str = editedEntry.split("\t")[2]# removes number and formating in front of sentence
             #print("*************")
             #print(entry)
             #print("*************")
             decodedSparql:str = generator_utils.decode(editedEntry)#should decode the AI generated translation to an actual one
             result:dict = generator_utils.query_dbpedia(decodedSparql)
-            resultStorage[entry]=[result]
+            resultStorage.append(result)
         return resultStorage
 
     """
@@ -261,6 +259,7 @@ class ModelApi():
                      #   print(align)
         return resultStorage
 
-#if __name__ == "__main__":#DEBUG
- #   m = ModelApi()
-  #  m.translate("Who are you doing? Are you good? How do you feel? The weather is great.")
+if __name__ == "__main__":#DEBUG
+    m = ModelApi()
+    ret = m.translate("What is the biggest mountin in the US? What is the capital of China?")
+    print(ret)

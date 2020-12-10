@@ -1,9 +1,10 @@
+from Veritas import get_data
 class Args:
     def __init__(self) ->None:
         """
         Path to the folder containing the vocabulary
         """
-        self.data:str="./data/"
+        self.data:str=get_data("dicts/")
         """
         The language from which will be the input
         """
@@ -23,7 +24,7 @@ class Args:
         """
         Path to checkpoint
         """
-        self.path:str = "./data/checkpoint_best.pt"
+        self.path:str = get_data("checkpoint_best.pt")
         """
         A dictionary used to override model args at generation that were used during model training, default "{}"
         """
