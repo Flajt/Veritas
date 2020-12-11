@@ -4,7 +4,7 @@ class Args:
         """
         Path to the folder containing the vocabulary
         """
-        self.data:str=get_data("dicts/")
+        self.data:str = f"{get_data('dicts/')}:{get_data('dicts/')}" #[get_data('dicts/')]#f"{get_data('dicts/')}:{get_data('dicts/')}" #[get_data('dicts/')]
         """
         The language from which will be the input
         """
@@ -76,7 +76,7 @@ class Args:
         self.sampling_topk = -1
         """
         """
-        self.sampling_temperature:float = 1.0
+        self.sampling_temperature:float = 1.0 # can't be found in Veritas 0.6.2
         """
         """
         self.diverse_beam_groups:int = -1
@@ -115,32 +115,7 @@ class Args:
         
         """
         self.remove_bpe:str = "none"
-        """
-            "task":"translation",
-            "fp16":False,
-            "path":self.m.chkpath,
-            "model_overrides":{},
-            "beam":5,
-            "nbest":1,
-            "max_len_a":0,
-            "max_len_b":200,
-            "min_len":1,
-            "no_early_stop": False,
-            "no-bemable-mm":False,
-            "lenpen":1,
-            "unkpen": 0,
-            "replace-unk":False, #"Check"
-            "unnormalized":False,
-            "sampling":False,
-            "sampling-topk":-1,
-            "sampling_temperature": 1.0,
-            "diverse-beam-groups":-1,
-            "diverse_beam_strength":0.5,
-            "print_alignment":False,
-            "buffer_size":10,
-            "max_tokens":500, #custom
-            "max_sentences":10,
-            "task":"translation"
-        
-        """
 
+#if __name__ == "__main__":
+ #   a = Args()
+  #  print(a.data, a.data[0])

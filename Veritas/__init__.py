@@ -12,5 +12,5 @@ if not os.path.exists(get_data("checkpoint_best.pt")):
     print("Download completed!\n")
 
 
-__version__="0.0.5"
+__version__="0.0.6"
 

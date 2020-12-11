@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="Veritass",
-    version="0.0.5",
+    version="0.0.6",
     author="Flajt",
     author_email="tjhannover@gmail.com",
     description="A python package for checking text for false statments via the Semantic Web",
@@ -14,9 +14,9 @@ setup(
     data_files=[('data', ['Veritas/data/dicts/dict.en.txt', 'Veritas/data/dicts/dict.sparql.txt'])],
     packages=["Veritas"],
     package_dir = {"Veritas":"Veritas"},
-    install_requires=[
-        "torch >= 1.5.1",
-        "fairseq >= 0.6.1",
+    install_requires=[ # need to lock dependencies otherwise everything crashes
+        "torch == 1.5.1",
+        "fairseq == 0.7.2",
         "spacy>=2.3.2",
         "tqdm>=4.49.0"
     ],

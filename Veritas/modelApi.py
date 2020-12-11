@@ -10,6 +10,8 @@ import torch
 from Veritas import args
 from Veritas import generator_utils
 from Veritas import nlpBackend
+
+
 class ModelApi():
     def __init__(self) -> None:
         self.nlp = nlpBackend.BasicFunctions()
@@ -21,10 +23,9 @@ class ModelApi():
             'Translation', 'src_str hypos pos_scores alignments')  # <- this one as well
         self.print_alignment = False
         self.args = args.Args()
-        self.args.buffer_size=2 #not required for work
+        self.args.buffer_size = 2  # not required for work
 
-
-    def translate(self,text:str)->list:
+    def translate(self, text: str) -> list:
         """
         Takes text as an input and returns a sparql answer for each question given.
         Inputs:
@@ -33,18 +34,22 @@ class ModelApi():
             A map containing the input split in sentences and the output as a json string
         """
         resultStorage = []
-        sentences:list = self.nlp.extractSentences(text)
-        sentences:list = [[str(i).lower().replace("?","").replace(".","")] for i in sentences]
-        #print(sentences)
-        ret:list = self.generate(text=sentences) # generates results from text
+        sentences: list = self.nlp.extractSentences(text)
+        sentences: list = [[str(i).lower().replace(
+            "?", "").replace(".", "")] for i in sentences]
+        # print(sentences)
+        # generates results from text
+        ret: list = self.generate(text=sentences)
         for entry in ret:
-            editedEntry:str = entry[0]# get's string from list
-            editedEntry:str = editedEntry.split("\t")[2]# removes number and formating in front of sentence
-            #print("*************")
-            #print(entry)
-            #print("*************")
-            decodedSparql:str = generator_utils.decode(editedEntry)#should decode the AI generated translation to an actual one
-            result:dict = generator_utils.query_dbpedia(decodedSparql)
+            editedEntry: str = entry[0]  # get's string from list
+            # removes number and formating in front of sentence
+            editedEntry: str = editedEntry.split("\t")[2]
+            # print("*************")
+            # print(entry)
+            # print("*************")
+            # should decode the AI generated translation to an actual one
+            decodedSparql: str = generator_utils.decode(editedEntry)
+            result: dict = generator_utils.query_dbpedia(decodedSparql)
             resultStorage.append(result)
         return resultStorage
 
@@ -64,6 +69,7 @@ class ModelApi():
                 yield buffer
     """
     # generates batches, takes in the input lines (from the buffered_read function), arguments, task??, max_positions
+
     def make_batches(self, lines, args, task, max_positions):
         tokens = [
             tokenizer.Tokenizer.tokenize(
@@ -94,11 +100,11 @@ class ModelApi():
                 lengths=batch['net_input']['src_lengths'],
             ), batch['id']  # return bartch id
 
-    def generate(self,text:list):
+    def generate(self, text: list):
         """
         text: Takes in a list of sentences as input, don't call by ourself if you don't know what you are doing
         """
-        resultStorage:list = []
+        resultStorage: list = []
         if self.args.buffer_size < 1:  # set's buffer size to a min of 1
             self.args.buffer_size = 1
         # if not number of max tokens and max_sentences is given -> set max_sentences to
@@ -142,10 +148,12 @@ class ModelApi():
         # Initialize generator
         translator = SequenceGenerator(
             tgt_dict, beam_size=self.args.beam, min_len=self.args.min_len,
-            stop_early=(not self.args.no_early_stop), normalize_scores=(not self.args.unnormalized),
+             stop_early=(not self.args.no_early_stop),sampling=self.args.sampling,
+            normalize_scores=(not self.args.unnormalized),
             len_penalty=self.args.lenpen, unk_penalty=self.args.unkpen,
-            sampling=self.args.sampling, sampling_topk=self.args.sampling_topk, temperature=self.args.sampling_temperature,
-            diverse_beam_groups=self.args.diverse_beam_groups, diverse_beam_strength=self.args.diverse_beam_strength,
+             sampling_topk=self.args.sampling_topk, #can't be used in fairseq 0.6.2
+            temperature=self.args.sampling_temperature,
+            diverse_beam_strength=self.args.diverse_beam_strength,diverse_beam_groups=self.args.diverse_beam_groups,
         )
 
         if use_cuda:
@@ -208,9 +216,10 @@ class ModelApi():
                 lengths = lengths.cuda()  # loads lengths on cuda
 
             # prepare encoder input with tokens and and src_lengths
-            encoder_input = {"net_input":{'src_tokens': tokens, 'src_lengths': lengths}}
+            encoder_input = {"net_input": {
+                'src_tokens': tokens, 'src_lengths': lengths}}
             #print(f"\t Tokens: \t {tokens}")
-            ###Problem should appear around here!
+            # Problem should appear around here!
             translations = translator.generate(  # generate actual translation from encoder input and maxlen
                 models,
                 encoder_input,
@@ -218,10 +227,10 @@ class ModelApi():
                            tokens.size(1) + self.args.max_len_b),
             )
             ####
-            #print("----------------------")
+            # print("----------------------")
             # return a list of results
             #print(f"\n > {translations}\n")
-            #print("----------------------")
+            # print("----------------------")
             return [make_result(batch.srcs[i], t) for i, t in enumerate(translations)]
 
         max_positions = utils.resolve_max_positions(  # resolves max positions
@@ -233,9 +242,9 @@ class ModelApi():
             # prints current buffer size
             print('| Sentence buffer size:', self.args.buffer_size)
         #print('| Type the input sentence and press return:')
-        for inputs in text:#self.buffered_read(self.args.buffer_size):
+        for inputs in text:  # self.buffered_read(self.args.buffer_size):
             # stores indicies of batches (for later structering the answer?)
-            #print(inputs)
+            # print(inputs)
             indices = []
             results = []  # stores results
             # takes user input and generates batch and corresponding ID for iteration
@@ -248,18 +257,20 @@ class ModelApi():
                 # takes result corresponding to the input batch id
                 result = results[i]
                 #print(f"result: {result}")
-                #print(result.src_str)  # print the input string (i.e. the question)
-                resultStorage.append(result.hypos) # stores result
-                #print(result.hypos)
+                # print(result.src_str)  # print the input string (i.e. the question)
+                resultStorage.append(result.hypos)  # stores result
+                # print(result.hypos)
                 # prints other stuff not needed for us
-                #for hypo, pos_scores, align in zip(result.hypos, result.pos_scores, result.alignments):
-                    #print(hypo)
-                    #print(pos_scores)
-                    #if align is not None:
-                     #   print(align)
+                # for hypo, pos_scores, align in zip(result.hypos, result.pos_scores, result.alignments):
+                # print(hypo)
+                # print(pos_scores)
+                # if align is not None:
+                #   print(align)
         return resultStorage
 
-if __name__ == "__main__":#DEBUG
+
+if __name__ == "__main__":  # DEBUG
     m = ModelApi()
-    ret = m.translate("What is the biggest mountin in the US? What is the capital of China?")
+    ret = m.translate(
+        "What is the biggest mountin in the US? What is the capital of China?")
     print(ret)
