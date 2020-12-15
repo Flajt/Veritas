@@ -15,10 +15,11 @@ setup(
     packages=["Veritas"],
     package_dir = {"Veritas":"Veritas"},
     install_requires=[ # need to lock dependencies otherwise everything crashes
-        "torch == 1.5.1",
+        "torch <= 1.5.1, >1.3.1", # needs to be checked
         "fairseq == 0.7.2",
         "spacy>=2.3.2",
-        "tqdm>=4.49.0"
+        "tqdm>=4.49.0",
+        "beautifulsoup4>=4.8.2"#needs testing if it doesn't brake
     ],
     python_requires = ">3.5.0",
     exclude_package_data={"": ["checkpoint_best.pt"]},
